@@ -132,6 +132,9 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
+  # all fonts wooooooohoooo
+  fonts.packages = with pkgs; [ nerdfonts ];
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
