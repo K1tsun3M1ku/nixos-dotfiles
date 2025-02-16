@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -42,7 +42,85 @@
       userName = "Faye Siller";
       userEmail = "faye.siller@protonmail.com";
     };
- };
+    gh = {
+      enable = true;
+    };
+    neovim = 
+    let
+      toLuaFile = file: "lua << EOF\n${builtins.readFile file}\nEOF\n";
+    in
+    {
+      enable = true;
+      viAlias = true;
+      vimAlias = true;
+      vimdiffAlias = true;
+      extraLuaConfig = ''
+        -- test Lua Code
+
+        ${builtins.readFile ~/.dotfiles/nixos/home-manager/nvim/options.lua}
+
+      '';
+      extraPackages = with pkgs; [
+        lua-language-server
+        rnix-lsp
+
+        xclip
+        wl-clipboard
+      ];
+
+      plugins = with pkgs.vimPlugins; [
+        # NOTE: neovim plugin has an option called type you can use to define the config type. so you can do 
+        # { 
+        #   plugin
+        #   type = “lua”
+        #   config = “lua code”
+        # }
+        {
+          plugin = nvim-lspconfig;
+          config = toLuaFile ~/.dotfiles/nixos/home-manager/nvim/plugin/lsp.lua;
+        }
+        {
+          plugin = comment-nvim;
+          type = "lua";
+          config = toLua "require(\"Comment\").setup()";
+        }
+        {
+          plugin = gruvbox-nvim;
+          config = "colorscheme gruvbox";
+        }
+        neodev-nvim
+        nvim-cmp 
+        {
+          plugin = nvim-cmp;
+          config = toLuaFile ~/.dotfiles/nixos/home-manager/nvim/plugin/cmp.lua;
+        }
+        {
+          plugin = telescope-nvim;
+          config = toLuaFile ~/.dotfiles/nixos/home-manager/nvim/plugin/telescope.lua;
+        }
+        telescope-fzf-native-nvim
+        cmp_luasnip
+        cmp-nvim-lsp
+        luasnip
+        friendly-snippets
+        lualine-nvim
+        nvim-web-devicons
+        {
+          plugin = (nvim-treesitter.withPlugins (p: [
+            p.tree-sitter-nix
+            p.tree-sitter-vim
+            p.tree-sitter-bash
+            p.tree-sitter-lua
+            p.tree-sitter-python
+            p.tree-sitter-json
+            p.tree-sitter-hyprlang
+          ]));
+          config = toLuaFile ~/.dotfiles/nixos/home-manager/nvim/plugin/treesitter.lua;
+        }
+        vim-nix
+      ];
+    };
+  };
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
